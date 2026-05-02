@@ -1,0 +1,1068 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--navy:#0a1628;--navy2:#0f2040;--navy3:#162a50;
+--teal:#0d9488;--teal2:#14b8a6;
+--green:#059669;--green2:#10b981;
+--amber:#d97706;--amber2:#f59e0b;
+--red:#dc2626;--red2:#ef4444;
+--blue:#1d4ed8;--blue2:#3b82f6;
+--r:8px;--r2:12px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:#fff;min-height:100vh;font-size:14px;line-height:1.5}
+h1,h2,h3{font-weight:600;line-height:1.3}
+input,select,textarea,button{font-family:'DM Sans',sans-serif;font-size:13px}
+button{cursor:pointer}
+.mono{font-family:'DM Mono',monospace}
+
+#wrap{display:flex;min-height:100vh}
+#sidebar{width:210px;min-height:100vh;background:var(--navy2);border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;flex-shrink:0}
+#main{flex:1;overflow-y:auto;max-height:100vh;background:var(--navy)}
+
+.slogo{padding:18px 14px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.slogo-row{display:flex;align-items:center;gap:9px}
+.slogo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.slogo-t{font-size:14px;font-weight:600;letter-spacing:-0.3px}
+.slogo-s{font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;text-transform:uppercase}
+.suser{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.spill{display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,255,255,0.05);border-radius:var(--r);border:1px solid rgba(255,255,255,0.08)}
+.savatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0}
+.sname{font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.srole{font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.4px}
+.radm{background:rgba(234,179,8,0.15);color:#fbbf24;border:1px solid rgba(234,179,8,0.3);font-size:8px;padding:1px 5px;border-radius:20px;font-weight:600;letter-spacing:0.3px;white-space:nowrap}
+.rusr{background:rgba(13,148,136,0.15);color:var(--teal2);border:1px solid rgba(13,148,136,0.3);font-size:8px;padding:1px 5px;border-radius:20px;font-weight:600;letter-spacing:0.3px;white-space:nowrap}
+nav{padding:6px}
+.nsec{font-size:9px;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.9px;padding:7px 8px 3px;font-weight:600}
+.nitem{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:rgba(255,255,255,0.5);font-size:12px;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;transition:all 0.12s}
+.nitem:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9)}
+.nitem.active{background:rgba(13,148,136,0.15);color:var(--teal2);font-weight:500}
+.sfooter{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,0.06)}
+.lbtn{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:rgba(255,255,255,0.35);font-size:11px;background:none;border:none;width:100%;transition:all 0.12s}
+.lbtn:hover{background:rgba(220,38,38,0.1);color:#fca5a5}
+
+.page{display:none;padding:22px}
+.page.active{display:block}
+.ptitle{font-size:20px;font-weight:600;letter-spacing:-0.4px}
+.psub{font-size:12px;color:rgba(255,255,255,0.35);margin-top:2px}
+.phead{margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
+
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.scard{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);padding:14px;position:relative;overflow:hidden}
+.scard::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:0 12px 0 50px;opacity:0.07}
+.scard.tc::after{background:var(--teal2)}.scard.gc::after{background:var(--green2)}.scard.bc::after{background:var(--blue2)}.scard.ac::after{background:var(--amber2)}.scard.rc::after{background:var(--red2)}
+.slbl{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;font-weight:500}
+.sval{font-size:20px;font-weight:600;letter-spacing:-0.4px;font-family:'DM Mono',monospace}
+.sdelta{font-size:10px;margin-top:3px;color:rgba(255,255,255,0.3)}
+.sdelta.up{color:#34d399}.sdelta.dn{color:#f87171}
+
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);padding:15px}
+.cchart{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);padding:18px;margin-bottom:18px}
+.ctitle{font-size:12px;font-weight:500;color:rgba(255,255,255,0.6);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.cwrap{position:relative;height:170px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+
+.tcrd{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);overflow:hidden;margin-bottom:18px}
+.thead2{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center}
+.ttitle{font-size:12px;font-weight:500;color:rgba(255,255,255,0.75)}
+table{width:100%;border-collapse:collapse}
+th{font-size:9px;text-transform:uppercase;letter-spacing:0.4px;color:rgba(255,255,255,0.3);font-weight:600;padding:9px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06)}
+td{font-size:12px;color:rgba(255,255,255,0.7);padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.ap{color:#34d399;font-family:'DM Mono',monospace;font-size:11px}
+.an{color:#f87171;font-family:'DM Mono',monospace;font-size:11px}
+.au{color:rgba(255,255,255,0.55);font-family:'DM Mono',monospace;font-size:11px}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:0.3px}
+.bp{background:rgba(234,179,8,0.12);color:#fbbf24;border:1px solid rgba(234,179,8,0.25)}
+.ba{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25)}
+.br{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.25)}
+.bac{background:rgba(59,130,246,0.12);color:#93c5fd;border:1px solid rgba(59,130,246,0.25)}
+.bc2{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1)}
+
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:10px;font-weight:500;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r);color:#fff;font-size:12px;outline:none;transition:border-color 0.12s;font-family:'DM Sans',sans-serif}
+.fi:focus{border-color:var(--teal2);background:rgba(255,255,255,0.07)}
+.fi::placeholder{color:rgba(255,255,255,0.2)}
+select.fi option{background:var(--navy2)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:none;white-space:nowrap;transition:all 0.12s}
+.btp{background:var(--teal);color:#fff}.btp:hover{background:var(--teal2)}
+.btg{background:var(--green);color:#fff}.btg:hover{background:var(--green2)}
+.btd{background:var(--red);color:#fff}.btd:hover{background:var(--red2)}
+.btgh{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1)}.btgh:hover{background:rgba(255,255,255,0.11);color:#fff}
+.btam{background:var(--amber);color:#fff}.btam:hover{background:var(--amber2)}
+.bsm{padding:4px 9px;font-size:10px}
+.bxs{padding:2px 7px;font-size:9px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
+.ir:last-child{border-bottom:none}
+.irl{color:rgba(255,255,255,0.38)}
+.irv{color:#fff;font-weight:500}
+.div{height:1px;background:rgba(255,255,255,0.06);margin:12px 0}
+.sec{font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}
+.ac2{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r2);padding:14px;cursor:pointer;text-align:left;transition:all 0.12s;border:none;width:100%}
+.ac2:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.14)}
+.ai{font-size:20px;margin-bottom:6px}
+.al{font-size:12px;font-weight:500;color:rgba(255,255,255,0.8)}
+.as2{font-size:10px;color:rgba(255,255,255,0.28);margin-top:1px}
+.alert{padding:9px 12px;border-radius:var(--r);font-size:11px;margin-bottom:12px}
+.alti{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:#93c5fd}
+.altw{background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.2);color:#fcd34d}
+.alts{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#34d399}
+.lprog{height:4px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;margin-top:4px}
+.lprogb{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:3px}
+.empty{text-align:center;padding:28px;color:rgba(255,255,255,0.25);font-size:12px}
+
+/* INLINE PANEL (replaces fixed modal) */
+.panel-overlay{background:rgba(0,0,0,0.5);border-radius:var(--r2);padding:2px;margin-bottom:18px}
+.panel{background:var(--navy2);border:1px solid rgba(255,255,255,0.1);border-radius:var(--r2);padding:20px}
+.panel-title{font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.panel-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)}
+
+/* CONFIRM BOX */
+.cbox{background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cbox-msg{font-size:12px;color:#fca5a5}
+.cbox-btns{display:flex;gap:6px;flex-shrink:0}
+
+/* AUTH */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy)}
+.abox{width:340px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px}
+.alogo{text-align:center;margin-bottom:20px}
+.alogo-i{width:44px;height:44px;background:linear-gradient(135deg,var(--teal),var(--green));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 8px}
+
+
+
+.toast{position:absolute;top:14px;right:14px;padding:9px 14px;border-radius:var(--r);font-size:12px;font-weight:500;z-index:999;border:1px solid rgba(255,255,255,0.1);max-width:260px;animation:sli 0.25s ease}
+.ts{background:#064e3b;color:#34d399;border-color:rgba(52,211,153,0.25)}
+.te{background:#7f1d1d;color:#fca5a5;border-color:rgba(252,165,165,0.25)}
+.ti{background:#1e3a5f;color:#93c5fd;border-color:rgba(147,197,253,0.25)}
+@keyframes sli{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+
+<div id="auth">
+  <div class="abox">
+    <div class="alogo">
+      <div class="alogo-i">🏦</div>
+      <div style="font-size:18px;font-weight:600;letter-spacing:-0.4px">Family Bank</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:2px">Private family financial system</div>
+    </div>
+    <div id="lform">
+      <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="le" placeholder="you@family.com"></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="lp" placeholder="••••••••"></div>
+      <button class="btn btp" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()">Sign In →</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="wrap" style="display:none;position:relative">
+  <div id="sidebar">
+    <div class="slogo"><div class="slogo-row"><div class="slogo-icon">🏦</div><div><div class="slogo-t">Family Bank</div><div class="slogo-s">Private</div></div></div></div>
+    <div class="suser"><div class="spill"><div class="savatar" id="sav"></div><div style="flex:1;overflow:hidden"><div class="sname" id="snm"></div><div class="srole" id="srl"></div></div><div id="sbdg"></div></div></div>
+    <nav id="snav"></nav>
+    <div class="sfooter"><button class="lbtn" onclick="doLogout()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</button></div>
+  </div>
+  <div id="main">
+    <div class="page active" id="pg-dashboard"></div>
+    <div class="page" id="pg-deposit"></div>
+    <div class="page" id="pg-loans"></div>
+    <div class="page" id="pg-history"></div>
+    <div class="page" id="pg-admin-users"></div>
+    <div class="page" id="pg-admin-deposits"></div>
+    <div class="page" id="pg-admin-loans"></div>
+    <div class="page" id="pg-admin-settings"></div>
+    <div class="page" id="pg-profile"></div>
+  </div>
+</div>
+
+<script>
+const DK='fb_db2';
+let DB={},CU=null,charts={};
+
+function initDB(){
+  const s=localStorage.getItem(DK);
+  if(s){DB=JSON.parse(s);return;}
+  const n=Date.now();
+  DB={
+    settings:{interestRate:2,loanRate:8,lastRun:null},
+    users:[
+      {id:'u0',name:'Admin Family',email:'admin@family.com',password:'admin123',role:'admin',contribution:50000,interest:2400,balance:52400,loanBal:0,created:n-90*864e5},
+      {id:'u1',name:'John Smith',email:'john@family.com',password:'john123',role:'user',contribution:25000,interest:1200,balance:26200,loanBal:15000,created:n-80*864e5},
+      {id:'u2',name:'Sara Smith',email:'sara@family.com',password:'sara123',role:'user',contribution:18000,interest:720,balance:18720,loanBal:0,created:n-60*864e5},
+    ],
+    transactions:[
+      {id:'t1',uid:'u1',type:'deposit',amount:10000,status:'approved',note:'Initial deposit',date:n-80*864e5},
+      {id:'t2',uid:'u2',type:'deposit',amount:8000,status:'approved',note:'Initial',date:n-60*864e5},
+      {id:'t3',uid:'u1',type:'deposit',amount:15000,status:'approved',note:'Monthly savings',date:n-30*864e5},
+      {id:'t4',uid:'u2',type:'deposit',amount:10000,status:'approved',note:'Bonus',date:n-20*864e5},
+      {id:'t5',uid:'u1',type:'interest',amount:600,status:'approved',note:'Monthly interest 2%',date:n-30*864e5},
+      {id:'t6',uid:'u2',type:'interest',amount:360,status:'approved',note:'Monthly interest 2%',date:n-30*864e5},
+      {id:'t7',uid:'u1',type:'loan',amount:15000,status:'approved',note:'Loan disbursed',date:n-15*864e5},
+      {id:'t8',uid:'u1',type:'deposit',amount:5000,status:'pending',note:'This month savings',date:n-2*864e5},
+      {id:'t9',uid:'u2',type:'deposit',amount:3000,status:'pending',note:'Extra saving',date:n-864e5},
+    ],
+    loans:[
+      {id:'l1',uid:'u1',principal:15000,rate:8,months:12,emi:1370,remaining:13630,status:'active',created:n-15*864e5,repayments:[]},
+    ],
+    audit:[
+      {id:'a1',aid:'u0',action:'Approved deposit Rs.10000 for John Smith',date:n-80*864e5},
+      {id:'a2',aid:'u0',action:'Approved loan Rs.15000 for John Smith',date:n-15*864e5},
+    ]
+  };
+  save();
+}
+function save(){localStorage.setItem(DK,JSON.stringify(DB));}
+function uid2(){return 'x'+Math.random().toString(36).slice(2,9);}
+function fmt(n){return 'Rs.'+Math.round(n||0).toLocaleString('en-IN');}
+function fd(ts){return new Date(ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function gu(id){return DB.users.find(u=>u.id===id);}
+function gtx(uid){return DB.transactions.filter(t=>t.uid===uid).sort((a,b)=>b.date-a.date);}
+function gloans(uid){return DB.loans.filter(l=>l.uid===uid);}
+function pool(){return DB.users.filter(u=>u.role==='user').reduce((s,u)=>s+u.contribution,0);}
+function loaned(){return DB.loans.filter(l=>l.status==='active').reduce((s,l)=>s+l.remaining,0);}
+function liq(){return pool()-loaned();}
+function emi(p,r,n){const mr=r/100/12;return Math.round(p*(mr*Math.pow(1+mr,n))/(Math.pow(1+mr,n)-1));}
+
+function toast(msg,type='s'){
+  const el=document.createElement('div');
+  el.className=`toast t${type}`;el.textContent=msg;
+  const wrap=document.getElementById('wrap');
+  wrap.style.position='relative';
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+function doLogin(){
+  const e=document.getElementById('le').value.trim();
+  const p=document.getElementById('lp').value;
+  const u=DB.users.find(x=>x.email===e&&x.password===p);
+  if(!u){toast('Invalid credentials','e');return;}
+  loginAs(u);
+}
+function loginAs(u){
+  CU=u;
+  document.getElementById('auth').style.display='none';
+  document.getElementById('wrap').style.display='flex';
+  setupSidebar();nav('dashboard');
+}
+function doLogout(){
+  CU=null;
+  document.getElementById('wrap').style.display='none';
+  document.getElementById('auth').style.display='flex';
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
+}
+
+function ico(n){
+  const m={
+    home:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    plus:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+    card:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+    list:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+    user:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+    users:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    check:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    set:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>`,
+  };
+  return m[n]||'';
+}
+
+function setupSidebar(){
+  const u=CU;
+  const ini=u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const cl=u.role==='admin'?['rgba(234,179,8,0.2)','#fbbf24']:['rgba(13,148,136,0.2)','#5eead4'];
+  const av=document.getElementById('sav');
+  av.style.cssText=`background:${cl[0]};color:${cl[1]}`;av.textContent=ini;
+  document.getElementById('snm').textContent=u.name;
+  document.getElementById('srl').textContent=u.role;
+  document.getElementById('sbdg').innerHTML=u.role==='admin'?'<span class="radm">Admin</span>':'<span class="rusr">Member</span>';
+  const un=[
+    {id:'dashboard',i:'home',l:'Dashboard'},{id:'deposit',i:'plus',l:'Deposit'},
+    {id:'loans',i:'card',l:'Loans'},{id:'history',i:'list',l:'History'},{id:'profile',i:'user',l:'Profile'},
+  ];
+  const an=[
+    {id:'dashboard',i:'home',l:'Overview'},{id:'admin-users',i:'users',l:'Members'},
+    {id:'admin-deposits',i:'check',l:'Deposits'},{id:'admin-loans',i:'card',l:'Loans'},
+    {id:'admin-settings',i:'set',l:'Settings'},{id:'history',i:'list',l:'Audit Log'},
+  ];
+  const items=u.role==='admin'?an:un;
+  document.getElementById('snav').innerHTML='<div class="nsec">Menu</div>'+items.map(x=>`<button class="nitem" id="ni-${x.id}" onclick="nav('${x.id}')">${ico(x.i)}${x.l}</button>`).join('');
+}
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nitem').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById(`pg-${page}`);
+  if(el){el.classList.add('active');renderPage(page,el);}
+  const ni=document.getElementById(`ni-${page}`);
+  if(ni)ni.classList.add('active');
+}
+
+function renderPage(page,el){
+  switch(page){
+    case 'dashboard': CU.role==='admin'?renderAdminDash(el):renderUserDash(el);break;
+    case 'deposit': renderDeposit(el);break;
+    case 'loans': renderLoans(el);break;
+    case 'history': renderHistory(el);break;
+    case 'admin-users': renderAdminUsers(el);break;
+    case 'admin-deposits': renderAdminDeposits(el);break;
+    case 'admin-loans': renderAdminLoans(el);break;
+    case 'admin-settings': renderAdminSettings(el);break;
+    case 'profile': renderProfile(el);break;
+  }
+}
+
+function renderUserDash(el){
+  const u=gu(CU.id);
+  const aL=gloans(u.id).find(l=>l.status==='active');
+  const pend=DB.transactions.filter(t=>t.uid===u.id&&t.status==='pending').length;
+  const elig=u.contribution*2;
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Good day, ${u.name.split(' ')[0]} 👋</div><div class="psub">${fd(Date.now())} · ${DB.settings.interestRate}% monthly interest</div></div></div>
+    ${pend?`<div class="alert altw">${pend} deposit(s) awaiting admin approval</div>`:''}
+    <div class="sgrid">
+      <div class="scard tc"><div class="slbl">Contribution</div><div class="sval">${fmt(u.contribution)}</div><div class="sdelta">Principal deposits</div></div>
+      <div class="scard gc"><div class="slbl">Interest Earned</div><div class="sval">${fmt(u.interest)}</div><div class="sdelta up">↑ ${DB.settings.interestRate}%/month</div></div>
+      <div class="scard bc"><div class="slbl">Total Balance</div><div class="sval">${fmt(u.balance)}</div><div class="sdelta">Contribution + Interest</div></div>
+      <div class="scard ${aL?'ac':''}"><div class="slbl">Active Loan</div><div class="sval">${aL?fmt(aL.remaining):'None'}</div><div class="sdelta">${aL?`EMI ${fmt(aL.emi)}/mo`:`Eligible: ${fmt(elig)}`}</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="cchart"><div class="ctitle">Balance Growth</div><div class="cwrap"><canvas id="ch-bal"></canvas></div></div>
+      <div class="cchart"><div class="ctitle">Monthly Interest</div><div class="cwrap"><canvas id="ch-int"></canvas></div></div>
+    </div>
+    <div class="sec">Quick Actions</div>
+    <div class="ag">
+      <button class="ac2" onclick="nav('deposit')"><div class="ai">💵</div><div class="al">Make a Deposit</div><div class="as2">Submit for approval</div></button>
+      <button class="ac2" onclick="nav('loans')"><div class="ai">🏧</div><div class="al">Request Loan</div><div class="as2">Up to ${fmt(elig)}</div></button>
+      <button class="ac2" onclick="nav('history')"><div class="ai">📋</div><div class="al">History</div><div class="as2">${gtx(u.id).length} transactions</div></button>
+      <button class="ac2" onclick="nav('profile')"><div class="ai">👤</div><div class="al">Profile</div><div class="as2">Account settings</div></button>
+    </div>
+    ${aL?`<div class="sec">Active Loan</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div><div style="font-size:15px;font-weight:600">${fmt(aL.remaining)} remaining</div><div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px">Principal ${fmt(aL.principal)} · ${aL.rate}% p.a.</div></div>
+        <span class="badge bac">Active</span>
+      </div>
+      <div class="lprog"><div class="lprogb" style="width:${Math.round(((aL.principal-aL.remaining)/aL.principal)*100)}%"></div></div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:3px">${Math.round(((aL.principal-aL.remaining)/aL.principal)*100)}% repaid · EMI ${fmt(aL.emi)}/month</div>
+      <div id="repay-inline-${aL.id}" style="margin-top:10px"></div>
+      <button class="btn btg bsm" onclick="showRepayInline('${aL.id}')">Make Repayment</button>
+    </div>`:''}
+  `;
+  setTimeout(()=>{
+    drawLine('ch-bal',genBal(u),'Balance','#0d9488');
+    drawLine('ch-int',genInt(u),'Interest','#10b981');
+  },50);
+}
+
+function showRepayInline(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const container=document.getElementById(`repay-inline-${loanId}`);
+  if(!container)return;
+  container.innerHTML=`
+    <div class="panel">
+      <div class="panel-title">Make Repayment</div>
+      <div class="ir"><span class="irl">Remaining</span><span class="irv" style="color:#f87171">${fmt(loan.remaining)}</span></div>
+      <div class="ir"><span class="irl">Suggested EMI</span><span class="irv">${fmt(loan.emi)}</span></div>
+      <div class="fg" style="margin-top:10px"><label class="fl">Amount</label><input class="fi" type="number" id="ramt-${loanId}" value="${loan.emi}" placeholder="${loan.emi}"></div>
+      <div class="panel-actions">
+        <button class="btn btgh bsm" onclick="document.getElementById('repay-inline-${loanId}').innerHTML=''">Cancel</button>
+        <button class="btn btg bsm" onclick="doRepay('${loanId}')">Pay →</button>
+      </div>
+    </div>
+  `;
+}
+
+function doRepay(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const inp=document.getElementById(`ramt-${loanId}`);
+  const amount=parseFloat(inp?inp.value:0);
+  if(!amount||amount<=0){toast('Enter valid amount','e');return;}
+  if(amount>loan.remaining){toast('Exceeds remaining balance','e');return;}
+  loan.remaining=Math.max(0,loan.remaining-amount);
+  if(loan.remaining===0)loan.status='completed';
+  loan.repayments.push({amount,date:Date.now()});
+  const u=gu(CU.id);u.loanBal=loan.remaining;
+  DB.transactions.push({id:uid2(),uid:CU.id,type:'repayment',amount,status:'approved',note:'Loan repayment',date:Date.now()});
+  save();
+  toast(loan.status==='completed'?'Loan fully repaid! 🎉':'Repayment recorded!');
+  nav('loans');
+}
+
+function renderAdminDash(el){
+  const p=pool(),l=loaned(),lq=liq();
+  const members=DB.users.filter(u=>u.role==='user');
+  const pd=DB.transactions.filter(t=>t.status==='pending'&&t.type==='deposit').length;
+  const pl=DB.loans.filter(l=>l.status==='pending').length;
+  const ti=members.reduce((s,u)=>s+u.interest,0);
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Admin Dashboard 👑</div><div class="psub">Manage family finances · ${members.length} members</div></div></div>
+    ${pd||pl?`<div class="alert altw">${pd} deposit(s) and ${pl} loan request(s) awaiting approval</div>`:''}
+    <div class="sgrid">
+      <div class="scard tc"><div class="slbl">Pool Fund</div><div class="sval">${fmt(p)}</div><div class="sdelta">Total contributions</div></div>
+      <div class="scard bc"><div class="slbl">Active Loans</div><div class="sval">${fmt(l)}</div><div class="sdelta">${DB.loans.filter(l=>l.status==='active').length} active</div></div>
+      <div class="scard gc"><div class="slbl">Liquidity</div><div class="sval">${fmt(lq)}</div><div class="sdelta up">Available to lend</div></div>
+      <div class="scard ac"><div class="slbl">Interest Paid</div><div class="sval">${fmt(ti)}</div><div class="sdelta">Total interest</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="cchart"><div class="ctitle">Fund Distribution</div><div class="cwrap"><canvas id="ch-dist"></canvas></div></div>
+      <div class="cchart"><div class="ctitle">Member Contributions</div><div class="cwrap"><canvas id="ch-mem"></canvas></div></div>
+    </div>
+    <div class="sec">Member Summary</div>
+    <div class="tcrd">
+      <table>
+        <thead><tr><th>Member</th><th>Contribution</th><th>Interest</th><th>Balance</th><th>Loan</th><th></th></tr></thead>
+        <tbody>${members.map(m=>`<tr>
+          <td><div style="font-weight:500;color:#fff">${m.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">${m.email}</div></td>
+          <td class="ap">${fmt(m.contribution)}</td><td class="ap">${fmt(m.interest)}</td><td class="au">${fmt(m.balance)}</td>
+          <td class="${m.loanBal?'an':'au'}">${m.loanBal?fmt(m.loanBal):'—'}</td>
+          <td><button class="btn btgh bxs" onclick="showMemberPanel('${m.id}')">View</button></td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div id="member-panel"></div>
+    <div class="sec" style="margin-top:4px">Quick Actions</div>
+    <div class="ag">
+      <button class="ac2" onclick="nav('admin-deposits')"><div class="ai">✅</div><div class="al">Review Deposits</div><div class="as2">${pd} pending</div></button>
+      <button class="ac2" onclick="nav('admin-loans')"><div class="ai">🏦</div><div class="al">Review Loans</div><div class="as2">${pl} pending</div></button>
+      <button class="ac2" onclick="nav('admin-users')"><div class="ai">👥</div><div class="al">Manage Members</div><div class="as2">${members.length} members</div></button>
+      <button class="ac2" onclick="applyInterest()"><div class="ai">📈</div><div class="al">Apply Interest</div><div class="as2">Run monthly</div></button>
+    </div>
+  `;
+  setTimeout(()=>{
+    drawDonut('ch-dist',['Loaned','Liquidity'],[l,lq],['#3b82f6','#0d9488']);
+    drawBar('ch-mem',members.map(m=>({label:m.name.split(' ')[0],val:m.contribution})),'#0d9488');
+  },50);
+}
+
+function showMemberPanel(userId){
+  const u=gu(userId);
+  const panel=document.getElementById('member-panel');
+  if(!panel)return;
+  panel.innerHTML=`
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-title">${u.name} — Account Detail</div>
+      <div class="ir"><span class="irl">Email</span><span class="irv">${u.email}</span></div>
+      <div class="ir"><span class="irl">Contribution</span><span class="irv">${fmt(u.contribution)}</span></div>
+      <div class="ir"><span class="irl">Interest Earned</span><span class="irv">${fmt(u.interest)}</span></div>
+      <div class="ir"><span class="irl">Total Balance</span><span class="irv" style="color:#34d399">${fmt(u.balance)}</span></div>
+      <div class="ir"><span class="irl">Loan Balance</span><span class="irv" style="${u.loanBal?'color:#f87171':''}">${u.loanBal?fmt(u.loanBal):'None'}</span></div>
+      <div class="div"></div>
+      <div class="sec">Adjust Balance</div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Amount</label><input class="fi" type="number" id="adj-amt-${userId}" placeholder="Amount"></div>
+        <div class="fg"><label class="fl">Type</label><select class="fi" id="adj-type-${userId}"><option value="add">Add</option><option value="deduct">Deduct</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Reason</label><input class="fi" id="adj-rsn-${userId}" placeholder="Reason for adjustment"></div>
+      <div class="panel-actions">
+        <button class="btn btgh bsm" onclick="document.getElementById('member-panel').innerHTML=''">Close</button>
+        <button class="btn btp bsm" onclick="doAdjust('${userId}')">Apply →</button>
+      </div>
+    </div>
+  `;
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function doAdjust(userId){
+  const u=gu(userId);
+  const amount=parseFloat(document.getElementById(`adj-amt-${userId}`).value);
+  const type=document.getElementById(`adj-type-${userId}`).value;
+  const reason=document.getElementById(`adj-rsn-${userId}`).value.trim();
+  if(!amount||!reason){toast('Fill amount and reason','e');return;}
+  if(type==='add'){u.contribution+=amount;u.balance+=amount;}
+  else{if(u.balance<amount){toast('Insufficient balance','e');return;}u.balance-=amount;}
+  DB.transactions.push({id:uid2(),uid:userId,type:'adjustment',amount,status:'approved',note:`Admin: ${reason}`,date:Date.now()});
+  DB.audit.push({id:uid2(),aid:CU.id,action:`${type==='add'?'Added':'Deducted'} ${fmt(amount)} for ${u.name}: ${reason}`,date:Date.now()});
+  save();
+  document.getElementById('member-panel').innerHTML='';
+  toast('Balance adjusted');
+  nav('admin-users');
+}
+
+function renderDeposit(el){
+  const u=gu(CU.id);
+  const myPend=DB.transactions.filter(t=>t.uid===u.id&&t.type==='deposit'&&t.status==='pending');
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Make a Deposit</div><div class="psub">Submit deposit for admin approval</div></div></div>
+    <div id="dep-panel"></div>
+    <div class="two">
+      <div class="card">
+        <div class="sec">New Deposit</div>
+        <div class="fg"><label class="fl">Amount (Rs.)</label><input class="fi" type="number" id="dep-amt" placeholder="Enter amount" min="100"></div>
+        <div class="fg"><label class="fl">Note (optional)</label><input class="fi" id="dep-note" placeholder="e.g. Monthly savings"></div>
+        <div class="alert alti" style="margin-top:2px">Deposits require admin approval before crediting.</div>
+        <button class="btn btp" style="width:100%;justify-content:center;margin-top:8px" onclick="submitDeposit()">Submit Deposit →</button>
+      </div>
+      <div class="card">
+        <div class="sec">Your Balance</div>
+        <div class="ir"><span class="irl">Contribution</span><span class="irv">${fmt(u.contribution)}</span></div>
+        <div class="ir"><span class="irl">Interest Earned</span><span class="irv">${fmt(u.interest)}</span></div>
+        <div class="ir"><span class="irl" style="font-weight:600;color:rgba(255,255,255,0.7)">Total Balance</span><span class="irv" style="color:#34d399;font-size:15px">${fmt(u.balance)}</span></div>
+        <div class="div"></div>
+        <div class="sec">Pending Deposits</div>
+        ${myPend.length?myPend.map(t=>`<div class="ir"><span class="irl">${fd(t.date)} · ${t.note||'Deposit'}</span><span style="color:#fbbf24;font-family:'DM Mono';font-size:11px">${fmt(t.amount)}</span></div>`).join(''):'<div style="color:rgba(255,255,255,0.22);font-size:11px">No pending deposits</div>'}
+      </div>
+    </div>
+    <div class="sec">Recent Deposits</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Date</th><th>Amount</th><th>Note</th><th>Status</th></tr></thead>
+      <tbody>${gtx(u.id).filter(t=>t.type==='deposit').slice(0,10).map(t=>`<tr><td>${fd(t.date)}</td><td class="ap">${fmt(t.amount)}</td><td style="color:rgba(255,255,255,0.35)">${t.note||'—'}</td><td><span class="badge b${t.status[0]}">${t.status}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">No deposits yet</td></tr>'}
+      </tbody>
+    </table></div>
+  `;
+}
+
+function submitDeposit(){
+  const amount=parseFloat(document.getElementById('dep-amt').value);
+  const note=document.getElementById('dep-note').value.trim();
+  if(!amount||amount<100){toast('Minimum Rs.100','e');return;}
+  DB.transactions.push({id:uid2(),uid:CU.id,type:'deposit',amount,status:'pending',note:note||'Deposit',date:Date.now()});
+  save();toast('Deposit submitted! Awaiting approval.');nav('deposit');
+}
+
+function renderLoans(el){
+  const u=gu(CU.id);
+  const myL=gloans(u.id);
+  const aL=myL.find(l=>l.status==='active');
+  const pL=myL.find(l=>l.status==='pending');
+  const elig=u.contribution*2;
+  const canReq=!aL&&!pL;
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Loans</div><div class="psub">Borrow up to 2× your contribution</div></div></div>
+    ${!canReq?`<div class="alert altw">${aL?'Active loan exists. Repay before requesting new.':'Loan request pending approval.'}</div>`:''}
+    <div id="loan-repay-panel"></div>
+    <div class="two">
+      <div class="card">
+        <div class="sec">${canReq?'Request Loan':'Loan Calculator'}</div>
+        <div class="fg"><label class="fl">Amount (Rs.)</label><input class="fi" type="number" id="l-amt" placeholder="Enter amount" oninput="lPreview()" ${canReq?'':'disabled'}></div>
+        <div class="fg"><label class="fl">Duration</label><select class="fi" id="l-dur" onchange="lPreview()" ${canReq?'':'disabled'}><option value="3">3 months</option><option value="6">6 months</option><option value="12" selected>12 months</option><option value="24">24 months</option><option value="36">36 months</option></select></div>
+        <div id="l-preview" class="alert alti" style="display:none"></div>
+        <div class="fg" style="margin-top:4px"><label class="fl">Purpose</label><input class="fi" id="l-purp" placeholder="e.g. Home renovation" ${canReq?'':'disabled'}></div>
+        ${canReq?`<button class="btn btp" style="width:100%;justify-content:center;margin-top:4px" onclick="submitLoan()">Request Loan →</button>`:''}
+      </div>
+      <div class="card">
+        <div class="sec">Eligibility</div>
+        <div class="ir"><span class="irl">Contribution</span><span class="irv">${fmt(u.contribution)}</span></div>
+        <div class="ir"><span class="irl">Max Eligible (2×)</span><span class="irv" style="color:#34d399">${fmt(elig)}</span></div>
+        <div class="ir"><span class="irl">Loan Rate</span><span class="irv">${DB.settings.loanRate}% p.a.</span></div>
+        ${aL?`<div class="div"></div>
+        <div class="sec">Active Loan</div>
+        <div class="ir"><span class="irl">Principal</span><span class="irv">${fmt(aL.principal)}</span></div>
+        <div class="ir"><span class="irl">Remaining</span><span class="irv" style="color:#f87171">${fmt(aL.remaining)}</span></div>
+        <div class="ir"><span class="irl">Monthly EMI</span><span class="irv">${fmt(aL.emi)}</span></div>
+        <div class="lprog" style="margin-top:8px"><div class="lprogb" style="width:${Math.round(((aL.principal-aL.remaining)/aL.principal)*100)}%"></div></div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:3px">${Math.round(((aL.principal-aL.remaining)/aL.principal)*100)}% repaid</div>
+        <button class="btn btg bsm" style="margin-top:10px;width:100%;justify-content:center" onclick="showRepayLoans('${aL.id}')">Make Repayment</button>`:''}
+      </div>
+    </div>
+    <div id="repay-loans-panel"></div>
+    ${myL.length?`<div class="sec">Loan History</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Date</th><th>Principal</th><th>Rate</th><th>Duration</th><th>EMI</th><th>Remaining</th><th>Status</th></tr></thead>
+      <tbody>${myL.map(l=>`<tr>
+        <td>${fd(l.created)}</td><td class="an">${fmt(l.principal)}</td><td>${l.rate}%</td><td>${l.months}mo</td>
+        <td class="au">${fmt(l.emi)}</td>
+        <td class="${l.remaining?'an':'ap'}">${l.remaining?fmt(l.remaining):'Paid'}</td>
+        <td><span class="badge b${l.status[0]}">${l.status}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:''}
+  `;
+}
+
+function lPreview(){
+  const amt=parseFloat(document.getElementById('l-amt').value)||0;
+  const dur=parseInt(document.getElementById('l-dur').value)||12;
+  const el=document.getElementById('l-preview');
+  if(!amt){el.style.display='none';return;}
+  const e=emi(amt,DB.settings.loanRate,dur);
+  el.style.display='block';
+  el.innerHTML=`EMI: <strong>${fmt(e)}/month</strong> · Total: ${fmt(e*dur)} · Interest: ${fmt(e*dur-amt)}`;
+}
+
+function showRepayLoans(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const container=document.getElementById('repay-loans-panel');
+  if(!container)return;
+  container.innerHTML=`
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-title">Make Repayment</div>
+      <div class="ir"><span class="irl">Remaining Balance</span><span class="irv" style="color:#f87171">${fmt(loan.remaining)}</span></div>
+      <div class="ir"><span class="irl">Suggested EMI</span><span class="irv">${fmt(loan.emi)}</span></div>
+      <div class="fg" style="margin-top:10px"><label class="fl">Repayment Amount</label><input class="fi" type="number" id="rl-amt-${loanId}" value="${loan.emi}" placeholder="${loan.emi}"></div>
+      <div class="panel-actions">
+        <button class="btn btgh bsm" onclick="document.getElementById('repay-loans-panel').innerHTML=''">Cancel</button>
+        <button class="btn btg bsm" onclick="doRepay('${loanId}')">Pay →</button>
+      </div>
+    </div>
+  `;
+}
+
+function submitLoan(){
+  const amount=parseFloat(document.getElementById('l-amt').value);
+  const dur=parseInt(document.getElementById('l-dur').value);
+  const purp=document.getElementById('l-purp').value.trim();
+  const u=gu(CU.id);
+  if(!amount||amount<1000){toast('Minimum loan Rs.1,000','e');return;}
+  if(amount>u.contribution*2){toast(`Max eligible: ${fmt(u.contribution*2)}`,'e');return;}
+  const e=emi(amount,DB.settings.loanRate,dur);
+  DB.loans.push({id:uid2(),uid:CU.id,principal:amount,rate:DB.settings.loanRate,months:dur,emi:e,remaining:amount,status:'pending',created:Date.now(),purpose:purp,repayments:[]});
+  DB.transactions.push({id:uid2(),uid:CU.id,type:'loan',amount,status:'pending',note:`Loan: ${purp||'Not specified'}`,date:Date.now()});
+  save();toast('Loan request submitted! Awaiting approval.');nav('loans');
+}
+
+function renderHistory(el){
+  const isAdmin=CU.role==='admin';
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">${isAdmin?'Audit Log':'Transaction History'}</div><div class="psub">${isAdmin?'All admin actions':'Your financial activities'}</div></div></div>
+    ${isAdmin?`<div class="tcrd"><table>
+      <thead><tr><th>Date</th><th>Admin</th><th>Action</th></tr></thead>
+      <tbody>${DB.audit.sort((a,b)=>b.date-a.date).map(a=>{const u=gu(a.aid);return`<tr><td>${fd(a.date)}</td><td>${u?u.name:'System'}</td><td style="color:rgba(255,255,255,0.55)">${a.action}</td></tr>`;}).join('')||'<tr><td colspan="3" class="empty">No audit logs</td></tr>'}
+      </tbody></table></div>`
+    :`<div class="tcrd"><div class="thead2"><span class="ttitle">All Transactions (${gtx(CU.id).length})</span></div>
+      <table>
+        <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th><th>Status</th></tr></thead>
+        <tbody>${gtx(CU.id).map(t=>`<tr>
+          <td>${fd(t.date)}</td>
+          <td><span style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);padding:1px 6px;border-radius:4px;font-size:10px">${t.type}</span></td>
+          <td class="${t.type==='repayment'||t.type==='loan'?'an':'ap'}">${fmt(t.amount)}</td>
+          <td style="color:rgba(255,255,255,0.32);font-size:11px">${t.note||'—'}</td>
+          <td><span class="badge b${t.status[0]}">${t.status}</span></td>
+        </tr>`).join('')||'<tr><td colspan="5" class="empty">No transactions</td></tr>'}
+        </tbody>
+      </table></div>`}
+  `;
+}
+
+function renderAdminUsers(el){
+  const members=DB.users.filter(u=>u.role==='user');
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Members</div><div class="psub">${members.length} family members</div></div><button class="btn btp" onclick="showAddUserPanel()">+ Add Member</button></div>
+    <div id="add-user-panel"></div>
+    <div class="tcrd">
+      <table>
+        <thead><tr><th>Member</th><th>Contribution</th><th>Balance</th><th>Loan</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>${members.map(m=>`<tr>
+          <td><div style="font-weight:500;color:#fff">${m.name}</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">${m.email}</div></td>
+          <td class="ap">${fmt(m.contribution)}</td><td class="au">${fmt(m.balance)}</td>
+          <td class="${m.loanBal?'an':'au'}">${m.loanBal?fmt(m.loanBal):'—'}</td>
+          <td style="color:rgba(255,255,255,0.3);font-size:11px">${fd(m.created)}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btgh bxs" onclick="showMemberPanelUsers('${m.id}')">View</button>
+            <button class="btn btd bxs" onclick="showRemoveConfirm('${m.id}')">Remove</button>
+          </td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div id="member-detail-panel"></div>
+    <div id="remove-confirm-panel"></div>
+  `;
+}
+
+function showAddUserPanel(){
+  const panel=document.getElementById('add-user-panel');
+  panel.innerHTML=`
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-title">Add New Member</div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Name</label><input class="fi" id="nu-n" placeholder="Full name"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="nu-e" placeholder="Email"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="nu-p" placeholder="Password"></div>
+        <div class="fg"><label class="fl">Initial Balance (Rs.)</label><input class="fi" type="number" id="nu-b" placeholder="0"></div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn btgh bsm" onclick="document.getElementById('add-user-panel').innerHTML=''">Cancel</button>
+        <button class="btn btp bsm" onclick="doAddUser()">Add Member</button>
+      </div>
+    </div>
+  `;
+}
+
+function doAddUser(){
+  const n=document.getElementById('nu-n').value.trim();
+  const e=document.getElementById('nu-e').value.trim();
+  const p=document.getElementById('nu-p').value;
+  const b=parseFloat(document.getElementById('nu-b').value)||0;
+  if(!n||!e||!p){toast('Fill all fields','e');return;}
+  if(DB.users.find(u=>u.email===e)){toast('Email exists','e');return;}
+  const u={id:uid2(),name:n,email:e,password:p,role:'user',contribution:b,interest:0,balance:b,loanBal:0,created:Date.now()};
+  DB.users.push(u);
+  if(b>0)DB.transactions.push({id:uid2(),uid:u.id,type:'deposit',amount:b,status:'approved',note:'Initial deposit by admin',date:Date.now()});
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Added member ${n}${b?` with balance ${fmt(b)}`:''}`,date:Date.now()});
+  save();
+  document.getElementById('add-user-panel').innerHTML='';
+  toast(`${n} added!`);nav('admin-users');
+}
+
+function showMemberPanelUsers(userId){
+  const u=gu(userId);
+  const panel=document.getElementById('member-detail-panel');
+  panel.innerHTML=`
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-title">${u.name} — Account Detail</div>
+      <div class="ir"><span class="irl">Contribution</span><span class="irv">${fmt(u.contribution)}</span></div>
+      <div class="ir"><span class="irl">Interest Earned</span><span class="irv">${fmt(u.interest)}</span></div>
+      <div class="ir"><span class="irl">Total Balance</span><span class="irv" style="color:#34d399">${fmt(u.balance)}</span></div>
+      <div class="ir"><span class="irl">Loan Balance</span><span class="irv" style="${u.loanBal?'color:#f87171':''}">${u.loanBal?fmt(u.loanBal):'None'}</span></div>
+      <div class="div"></div>
+      <div class="sec">Adjust Balance</div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Amount</label><input class="fi" type="number" id="ua-amt-${userId}" placeholder="Amount"></div>
+        <div class="fg"><label class="fl">Type</label><select class="fi" id="ua-type-${userId}"><option value="add">Add</option><option value="deduct">Deduct</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Reason</label><input class="fi" id="ua-rsn-${userId}" placeholder="Reason for adjustment"></div>
+      <div class="panel-actions">
+        <button class="btn btgh bsm" onclick="document.getElementById('member-detail-panel').innerHTML=''">Close</button>
+        <button class="btn btp bsm" onclick="doAdjustUser('${userId}')">Apply →</button>
+      </div>
+    </div>
+  `;
+}
+
+function doAdjustUser(userId){
+  const u=gu(userId);
+  const amount=parseFloat(document.getElementById(`ua-amt-${userId}`).value);
+  const type=document.getElementById(`ua-type-${userId}`).value;
+  const reason=document.getElementById(`ua-rsn-${userId}`).value.trim();
+  if(!amount||!reason){toast('Fill amount and reason','e');return;}
+  if(type==='add'){u.contribution+=amount;u.balance+=amount;}
+  else{if(u.balance<amount){toast('Insufficient balance','e');return;}u.balance-=amount;}
+  DB.transactions.push({id:uid2(),uid:userId,type:'adjustment',amount,status:'approved',note:`Admin: ${reason}`,date:Date.now()});
+  DB.audit.push({id:uid2(),aid:CU.id,action:`${type==='add'?'Added':'Deducted'} ${fmt(amount)} for ${u.name}: ${reason}`,date:Date.now()});
+  save();document.getElementById('member-detail-panel').innerHTML='';
+  toast('Balance adjusted');nav('admin-users');
+}
+
+function showRemoveConfirm(userId){
+  const u=gu(userId);
+  const panel=document.getElementById('remove-confirm-panel');
+  panel.innerHTML=`
+    <div class="cbox">
+      <span class="cbox-msg">Remove ${u.name} permanently? All their data will remain in audit logs.</span>
+      <div class="cbox-btns">
+        <button class="btn btgh bxs" onclick="document.getElementById('remove-confirm-panel').innerHTML=''">Cancel</button>
+        <button class="btn btd bxs" onclick="doRemove('${userId}')">Remove</button>
+      </div>
+    </div>
+  `;
+}
+
+function doRemove(userId){
+  const u=gu(userId);
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Removed member ${u.name} (${u.email})`,date:Date.now()});
+  DB.users=DB.users.filter(x=>x.id!==userId);
+  save();toast(`${u.name} removed`);nav('admin-users');
+}
+
+function renderAdminDeposits(el){
+  const pend=DB.transactions.filter(t=>t.type==='deposit'&&t.status==='pending');
+  const approved=DB.transactions.filter(t=>t.type==='deposit'&&t.status!=='pending').sort((a,b)=>b.date-a.date).slice(0,15);
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Deposits</div><div class="psub">${pend.length} pending approval</div></div></div>
+    <div id="dep-action-feedback"></div>
+    ${pend.length?`
+    <div class="sec">Pending Approval</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Member</th><th>Amount</th><th>Note</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody id="pend-dep-rows">
+        ${pend.map(t=>{const u=gu(t.uid);return`<tr id="dep-row-${t.id}">
+          <td style="font-weight:500">${u?u.name:'Unknown'}</td>
+          <td class="ap">${fmt(t.amount)}</td>
+          <td style="color:rgba(255,255,255,0.35)">${t.note||'—'}</td>
+          <td style="font-size:11px;color:rgba(255,255,255,0.3)">${fd(t.date)}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btg bxs" onclick="approveDep('${t.id}')">✓ Approve</button>
+            <button class="btn btd bxs" onclick="rejectDep('${t.id}')">✗ Reject</button>
+          </td>
+        </tr>`;}).join('')}
+      </tbody>
+    </table></div>`:`<div class="alert alts">No pending deposits ✓ All caught up!</div>`}
+    <div class="sec" style="margin-top:16px">Recent Processed</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Member</th><th>Amount</th><th>Note</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>${approved.map(t=>{const u=gu(t.uid);return`<tr><td>${u?u.name:'?'}</td><td class="ap">${fmt(t.amount)}</td><td style="color:rgba(255,255,255,0.35)">${t.note||'—'}</td><td style="font-size:11px;color:rgba(255,255,255,0.3)">${fd(t.date)}</td><td><span class="badge b${t.status[0]}">${t.status}</span></td></tr>`;}).join('')||'<tr><td colspan="5" class="empty">No processed deposits</td></tr>'}
+      </tbody>
+    </table></div>
+  `;
+}
+
+function approveDep(txId){
+  const tx=DB.transactions.find(t=>t.id===txId);
+  const u=gu(tx.uid);
+  tx.status='approved';
+  u.contribution+=tx.amount;u.balance+=tx.amount;
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Approved deposit ${fmt(tx.amount)} for ${u.name}`,date:Date.now()});
+  save();
+  const row=document.getElementById(`dep-row-${txId}`);
+  if(row){
+    row.querySelector('td:last-child').innerHTML=`<span class="badge ba">Approved</span>`;
+    row.style.opacity='0.5';
+    setTimeout(()=>nav('admin-deposits'),800);
+  }
+  toast(`Approved ${fmt(tx.amount)} for ${u.name}`);
+}
+
+function rejectDep(txId){
+  const tx=DB.transactions.find(t=>t.id===txId);
+  const u=gu(tx.uid);
+  tx.status='rejected';
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Rejected deposit ${fmt(tx.amount)} for ${u.name}`,date:Date.now()});
+  save();
+  const row=document.getElementById(`dep-row-${txId}`);
+  if(row){
+    row.querySelector('td:last-child').innerHTML=`<span class="badge br">Rejected</span>`;
+    row.style.opacity='0.5';
+    setTimeout(()=>nav('admin-deposits'),800);
+  }
+  toast('Deposit rejected','e');
+}
+
+function renderAdminLoans(el){
+  const pend=DB.loans.filter(l=>l.status==='pending');
+  const all=DB.loans.sort((a,b)=>b.created-a.created);
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">Loan Management</div><div class="psub">${pend.length} pending, ${DB.loans.filter(l=>l.status==='active').length} active</div></div></div>
+    <div id="loan-action-panel"></div>
+    ${pend.length?`
+    <div class="sec">Pending Requests</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Member</th><th>Principal</th><th>Duration</th><th>EMI</th><th>Purpose</th><th>Action</th></tr></thead>
+      <tbody id="pend-loan-rows">
+        ${pend.map(l=>{const u=gu(l.uid);return`<tr id="loan-row-${l.id}">
+          <td style="font-weight:500">${u?u.name:'?'}</td>
+          <td class="an">${fmt(l.principal)}</td>
+          <td>${l.months}mo</td>
+          <td class="au">${fmt(l.emi)}</td>
+          <td style="color:rgba(255,255,255,0.35);font-size:11px">${l.purpose||'—'}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btg bxs" onclick="approveLoan('${l.id}')">✓ Approve</button>
+            <button class="btn btd bxs" onclick="rejectLoan('${l.id}')">✗ Reject</button>
+          </td>
+        </tr>`;}).join('')}
+      </tbody>
+    </table></div>`:`<div class="alert alts">No pending loan requests ✓</div>`}
+    <div class="sec" style="margin-top:16px">All Loans</div>
+    <div class="tcrd"><table>
+      <thead><tr><th>Member</th><th>Principal</th><th>Rate</th><th>EMI</th><th>Remaining</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="all-loans-rows">
+        ${all.map(l=>{const u=gu(l.uid);return`<tr id="aloan-row-${l.id}">
+          <td>${u?u.name:'?'}</td>
+          <td class="an">${fmt(l.principal)}</td>
+          <td>${l.rate}%</td>
+          <td class="au">${fmt(l.emi)}</td>
+          <td class="${l.remaining?'an':'ap'}">${l.remaining?fmt(l.remaining):'Paid'}</td>
+          <td><span class="badge b${l.status[0]}">${l.status}</span></td>
+          <td>${l.status==='active'?`<button class="btn btam bxs" onclick="showWriteOffConfirm('${l.id}')">Write Off</button>`:'—'}</td>
+        </tr>`;}).join('')||'<tr><td colspan="7" class="empty">No loans</td></tr>'}
+      </tbody>
+    </table></div>
+    <div id="writeoff-confirm-panel"></div>
+  `;
+}
+
+function approveLoan(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const u=gu(loan.uid);
+  const avail=liq();
+  if(loan.principal>avail){toast(`Insufficient liquidity. Available: ${fmt(avail)}`,'e');return;}
+  loan.status='active';
+  u.loanBal=loan.principal;
+  const ptx=DB.transactions.find(t=>t.uid===loan.uid&&t.type==='loan'&&t.status==='pending');
+  if(ptx)ptx.status='approved';
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Approved loan ${fmt(loan.principal)} for ${u.name}`,date:Date.now()});
+  save();
+  const row=document.getElementById(`loan-row-${loanId}`);
+  if(row){row.querySelector('td:last-child').innerHTML=`<span class="badge ba">Approved</span>`;row.style.opacity='0.5';setTimeout(()=>nav('admin-loans'),800);}
+  toast(`Loan approved for ${u.name}`);
+}
+
+function rejectLoan(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const u=gu(loan.uid);
+  loan.status='rejected';
+  const ptx=DB.transactions.find(t=>t.uid===loan.uid&&t.type==='loan'&&t.status==='pending');
+  if(ptx)ptx.status='rejected';
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Rejected loan from ${u.name}`,date:Date.now()});
+  save();
+  const row=document.getElementById(`loan-row-${loanId}`);
+  if(row){row.querySelector('td:last-child').innerHTML=`<span class="badge br">Rejected</span>`;row.style.opacity='0.5';setTimeout(()=>nav('admin-loans'),800);}
+  toast('Loan rejected','e');
+}
+
+function showWriteOffConfirm(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const u=gu(loan.uid);
+  const panel=document.getElementById('writeoff-confirm-panel');
+  panel.innerHTML=`
+    <div class="cbox" style="margin-top:12px">
+      <span class="cbox-msg">Write off ${fmt(loan.remaining)} remaining balance for ${u.name}? This marks the loan as completed.</span>
+      <div class="cbox-btns">
+        <button class="btn btgh bxs" onclick="document.getElementById('writeoff-confirm-panel').innerHTML=''">Cancel</button>
+        <button class="btn btam bxs" onclick="doWriteOff('${loanId}')">Write Off</button>
+      </div>
+    </div>
+  `;
+}
+
+function doWriteOff(loanId){
+  const loan=DB.loans.find(l=>l.id===loanId);
+  const u=gu(loan.uid);
+  const written=loan.remaining;
+  loan.remaining=0;loan.status='completed';u.loanBal=0;
+  DB.transactions.push({id:uid2(),uid:loan.uid,type:'writeoff',amount:written,status:'approved',note:'Loan written off by admin',date:Date.now()});
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Wrote off loan ${fmt(written)} for ${u.name}`,date:Date.now()});
+  save();
+  document.getElementById('writeoff-confirm-panel').innerHTML='';
+  toast(`Loan written off for ${u.name}`);nav('admin-loans');
+}
+
+function renderAdminSettings(el){
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">System Settings</div><div class="psub">Configure interest rates and system parameters</div></div></div>
+    <div class="two">
+      <div class="card">
+        <div class="sec">Interest Settings</div>
+        <div class="fg"><label class="fl">Monthly Deposit Interest (%)</label><input class="fi" type="number" id="si" value="${DB.settings.interestRate}" step="0.1" min="0" max="10"></div>
+        <div class="fg"><label class="fl">Loan Interest Rate (% p.a.)</label><input class="fi" type="number" id="sl" value="${DB.settings.loanRate}" step="0.5" min="0" max="30"></div>
+        <div class="alert alti">Rate changes apply to future calculations only.</div>
+        <button class="btn btp" style="width:100%;justify-content:center;margin-top:8px" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="card">
+        <div class="sec">Interest Operations</div>
+        <div class="ir"><span class="irl">Current Deposit Rate</span><span class="irv" style="color:#34d399">${DB.settings.interestRate}%/month</span></div>
+        <div class="ir"><span class="irl">Current Loan Rate</span><span class="irv" style="color:#f87171">${DB.settings.loanRate}% p.a.</span></div>
+        <div class="ir"><span class="irl">Last Interest Run</span><span class="irv" style="font-size:11px">${DB.settings.lastRun?fd(DB.settings.lastRun):'Never'}</span></div>
+        <div class="div"></div>
+        <button class="btn btg" style="width:100%;justify-content:center" onclick="applyInterest()">Run Monthly Interest Now</button>
+        <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:5px;text-align:center">Applies ${DB.settings.interestRate}% to all member balances</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">System Stats</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><div class="slbl">Members</div><div style="font-size:17px;font-weight:600">${DB.users.filter(u=>u.role==='user').length}</div></div>
+        <div><div class="slbl">Transactions</div><div style="font-size:17px;font-weight:600">${DB.transactions.length}</div></div>
+        <div><div class="slbl">Total Loans</div><div style="font-size:17px;font-weight:600">${DB.loans.length}</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function saveSettings(){
+  const r=parseFloat(document.getElementById('si').value);
+  const l=parseFloat(document.getElementById('sl').value);
+  if(isNaN(r)||r<0||r>10){toast('Rate 0-10%','e');return;}
+  if(isNaN(l)||l<0||l>30){toast('Loan rate 0-30%','e');return;}
+  DB.settings.interestRate=r;DB.settings.loanRate=l;
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Updated rates: deposit ${r}%/mo, loan ${l}% p.a.`,date:Date.now()});
+  save();toast('Settings saved!');nav('admin-settings');
+}
+
+function applyInterest(){
+  const members=DB.users.filter(u=>u.role==='user');
+  let count=0;
+  members.forEach(u=>{
+    if(u.contribution>0){
+      const interest=Math.round(u.contribution*(DB.settings.interestRate/100));
+      u.interest+=interest;u.balance+=interest;
+      DB.transactions.push({id:uid2(),uid:u.id,type:'interest',amount:interest,status:'approved',note:`Monthly interest ${DB.settings.interestRate}%`,date:Date.now()});
+      count++;
+    }
+  });
+  DB.settings.lastRun=Date.now();
+  DB.audit.push({id:uid2(),aid:CU.id,action:`Applied ${DB.settings.interestRate}% interest to ${count} members`,date:Date.now()});
+  save();toast(`Interest applied to ${count} members! 📈`);
+  nav(CU.role==='admin'?'admin-settings':'dashboard');
+}
+
+function renderProfile(el){
+  const u=gu(CU.id);
+  el.innerHTML=`
+    <div class="phead"><div><div class="ptitle">My Profile</div></div></div>
+    <div class="two">
+      <div class="card">
+        <div class="sec">Account Info</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(13,148,136,0.15);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--teal2);flex-shrink:0">${u.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <div><div style="font-size:15px;font-weight:600">${u.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.3)">${u.email}</div></div>
+        </div>
+        <div class="ir"><span class="irl">Role</span><span class="irv">${u.role}</span></div>
+        <div class="ir"><span class="irl">Member Since</span><span class="irv">${fd(u.created)}</span></div>
+        <div class="div"></div>
+        <div class="sec">Change Password</div>
+        <div class="fg"><label class="fl">New Password</label><input class="fi" type="password" id="newpw" placeholder="Min 6 characters"></div>
+        <button class="btn btgh bsm" onclick="changePwd()">Update Password</button>
+      </div>
+      <div class="card">
+        <div class="sec">Financial Summary</div>
+        <div class="ir"><span class="irl">Contribution</span><span class="irv">${fmt(u.contribution)}</span></div>
+        <div class="ir"><span class="irl">Interest Earned</span><span class="irv" style="color:#34d399">${fmt(u.interest)}</span></div>
+        <div class="ir"><span class="irl" style="font-weight:600">Total Balance</span><span class="irv" style="color:#34d399;font-size:15px">${fmt(u.balance)}</span></div>
+        ${u.loanBal?`<div class="ir"><span class="irl">Loan Balance</span><span class="irv" style="color:#f87171">${fmt(u.loanBal)}</span></div>`:''}
+        <div class="ir"><span class="irl">Loan Eligible</span><span class="irv">${fmt(u.contribution*2)}</span></div>
+        <div class="ir"><span class="irl">Monthly Return</span><span class="irv" style="color:#34d399">${DB.settings.interestRate}%</span></div>
+        <div class="ir"><span class="irl">Total Transactions</span><span class="irv">${gtx(u.id).length}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function changePwd(){
+  const p=document.getElementById('newpw').value;
+  if(!p||p.length<6){toast('Min 6 chars','e');return;}
+  gu(CU.id).password=p;save();toast('Password updated!');
+}
+
+function genBal(u){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  const b=u.contribution;const r=DB.settings.interestRate/100;
+  return{labels:months,data:months.map((_,i)=>Math.round(b*(1+r*i)))};
+}
+function genInt(u){
+  const months=['Jan','Feb','Mar','Apr','May','Jun'];
+  const m=Math.round(u.contribution*DB.settings.interestRate/100);
+  return{labels:months,data:months.map(()=>m+Math.round((Math.random()-0.5)*m*0.3))};
+}
+
+function drawLine(id,data,label,color){
+  const c=document.getElementById(id);if(!c)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(c,{type:'line',data:{labels:data.labels,datasets:[{label,data:data.data,borderColor:color,backgroundColor:color+'22',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:color,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,22,40,0.95)',titleColor:'rgba(255,255,255,0.6)',bodyColor:'#fff',borderColor:'rgba(255,255,255,0.1)',borderWidth:1}},
+    scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'rgba(255,255,255,0.28)',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'rgba(255,255,255,0.28)',font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}});
+}
+function drawDonut(id,labels,data,colors){
+  const c=document.getElementById(id);if(!c)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(c,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:'rgba(255,255,255,0.05)',borderWidth:2,hoverOffset:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,0.45)',font:{size:9},padding:10,boxWidth:8}},tooltip:{backgroundColor:'rgba(10,22,40,0.95)',bodyColor:'#fff'}},cutout:'68%'}});
+}
+function drawBar(id,data,color){
+  const c=document.getElementById(id);if(!c)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(c,{type:'bar',data:{labels:data.map(d=>d.label),datasets:[{data:data.map(d=>d.val),backgroundColor:color+'55',borderColor:color,borderWidth:1,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(10,22,40,0.95)',bodyColor:'#fff'}},
+    scales:{x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.28)',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'rgba(255,255,255,0.28)',font:{size:9},callback:v=>'₹'+Number(v).toLocaleString('en-IN')}}}}});
+}
+
+initDB();
+</script>
+</body>
+</html>
